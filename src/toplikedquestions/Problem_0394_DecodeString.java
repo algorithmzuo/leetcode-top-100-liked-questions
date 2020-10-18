@@ -17,6 +17,8 @@ public class Problem_0394_DecodeString {
 		}
 	}
 
+	// s[i....]  何时停？遇到   ']'  或者遇到 s的终止位置，停止
+	// 返回Info
 	public static Info process(char[] s, int i) {
 		StringBuilder ans = new StringBuilder();
 		int times = 0;

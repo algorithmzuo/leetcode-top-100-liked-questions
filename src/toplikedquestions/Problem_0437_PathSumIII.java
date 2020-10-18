@@ -16,6 +16,7 @@ public class Problem_0437_PathSumIII {
 		return process(root, sum, 0, preSumMap);
 	}
 
+	// 返回方法数
 	public static int process(TreeNode x, int sum, int preAll, HashMap<Integer, Integer> preSumMap) {
 		if (x == null) {
 			return 0;

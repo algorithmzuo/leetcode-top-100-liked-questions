@@ -1,5 +1,6 @@
 package toplikedquestions;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -13,13 +14,13 @@ public class Problem_0406_QueueReconstructionByHeight {
 			units[i] = new Unit(people[i][0], people[i][1]);
 		}
 		Arrays.sort(units, new UnitComparator());
-		LinkedList<Unit> list = new LinkedList<>();
+		ArrayList<Unit> arrList = new ArrayList<>();
 		for (Unit unit : units) {
-			list.add(unit.k, unit);
+			arrList.add(unit.k, unit);
 		}
 		int[][] ans = new int[N][2];
 		int index = 0;
-		for (Unit unit : list) {
+		for (Unit unit : arrList) {
 			ans[index][0] = unit.h;
 			ans[index++][1] = unit.k;
 		}

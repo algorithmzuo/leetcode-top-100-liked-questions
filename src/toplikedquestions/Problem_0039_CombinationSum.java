@@ -14,16 +14,22 @@ public class Problem_0039_CombinationSum {
 		return process1(candidates, candidates.length - 1, target);
 	}
 
+	// 想凑出来的和叫target
+	// arr[0...index]所有的数，自由选择，每一种数任意个，(index+1....) 不用管
+	// 凑出target，所有的方案，返回，List<List<Integer>>
 	public static List<List<Integer>> process1(int[] arr, int index, int target) {
 		List<List<Integer>> ans = new ArrayList<>();
-		if (target == 0) {
+		if (target == 0) { // index == -1
 			ans.add(new ArrayList<>());
 			return ans;
 		}
+		// target != 0 
 		if (index == -1) {
 			return ans;
 		}
+		// 当前的数可以使用多少个
 		for (int zhang = 0; zhang * arr[index] <= target; zhang++) {
+			// 已经决定了使用zhang个，当前数
 			List<List<Integer>> preLists = process1(arr, index - 1, target - (zhang * arr[index]));
 			for (List<Integer> pre : preLists) {
 				for (int i = 0; i < zhang; i++) {
