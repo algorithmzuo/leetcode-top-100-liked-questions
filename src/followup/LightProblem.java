@@ -3,7 +3,7 @@ package followup;
 /*
  * 给定一个数组arr，长度为N，arr中的值不是0就是1
  * arr[i]表示第i栈灯的状态，0代表灭灯，1代表亮灯
- * 每一栈灯都有开关，但是按下i号灯的开关，会同时改变i-1、i、i+2栈灯的状态
+ * 每一栈灯都有开关，但是按下i号灯的开关，会同时改变i-1、i、i+1栈灯的状态
  * 问题一：
  * 如果N栈灯排成一条直线,请问最少按下多少次开关,能让灯都亮起来
  * 排成一条直线说明：
@@ -35,11 +35,17 @@ public class LightProblem {
 		return f1(arr, 0);
 	}
 
+	// arr[0...i-1]的灯，不需要管
+	// arr[i......]的灯上，按开关
+	// 1) i位置的开关，不改变，走一个分支
+	// 2) i位置的开关，改变，走一个分支
 	public static int f1(int[] arr, int i) {
 		if (i == arr.length) {
 			return valid(arr) ? 0 : Integer.MAX_VALUE;
 		}
+		// 决定，在i位置，不改变开关
 		int p1 = f1(arr, i + 1);
+		// 决定，在i位置，改变开关
 		change1(arr, i);
 		int p2 = f1(arr, i + 1);
 		change1(arr, i);
@@ -70,7 +76,7 @@ public class LightProblem {
 		return true;
 	}
 
-	// 无环改灯问题的递归版本
+	// 无环改灯问题的优良递归版本
 	public static int noLoopMinStep1(int[] arr) {
 		if (arr == null || arr.length == 0) {
 			return 0;
@@ -91,18 +97,24 @@ public class LightProblem {
 		return Math.min(p1, p2);
 	}
 
-	public static int process1(int[] arr, int nextIndex, int preStatus, int curStatus) {
-		if (nextIndex == arr.length) {
-			return preStatus != curStatus ? (Integer.MAX_VALUE) : (curStatus ^ 1);
+	// index : 来到的位置，不能在这个位置上做改变！
+	// pre：前一个位置的状态，这个是要改变的！
+	// prepre：前前状态
+	public static int process1(int[] arr, int index, int prepre, int pre) {
+		if (index == arr.length) { // pre 压中最后一盏灯
+			return prepre != pre ? (Integer.MAX_VALUE) : (pre ^ 1);
 		}
-		// i < arr.length
-		if (preStatus == 0) { // 一定要改变
-			curStatus ^= 1;
-			int cur = arr[nextIndex] ^ 1;
-			int next = process1(arr, nextIndex + 1, curStatus, cur);
+		//
+		// i < arr.length -> pre 不是最后一盏灯，后面还能做决定
+		if (prepre == 0) { // 一定要改变
+			// pre这个灯，一定要变，pre前灯的状态，改变！ 前前 -> 1
+			pre ^= 1;
+			// 前前（有效） pre^1 (cur) (arr[index] ^ 1)
+			int cur = arr[index] ^ 1;
+			int next = process1(arr, index + 1, pre, cur);
 			return next == Integer.MAX_VALUE ? next : (next + 1);
 		} else { // 一定不能改变
-			return process1(arr, nextIndex + 1, curStatus, arr[nextIndex]);
+			return process1(arr, index + 1, pre, arr[index]);
 		}
 	}
 
@@ -123,20 +135,20 @@ public class LightProblem {
 		return Math.min(p1, p2);
 	}
 
-	public static int traceNoLoop(int[] arr, int preStatus, int curStatus) {
+	public static int traceNoLoop(int[] arr, int prepre, int pre) {
 		int i = 2;
 		int op = 0;
 		while (i != arr.length) {
-			if (preStatus == 0) {
+			if (prepre == 0) {
 				op++;
-				preStatus = curStatus ^ 1;
-				curStatus = arr[i++] ^ 1;
+				prepre = pre ^ 1;
+				pre = arr[i++] ^ 1;
 			} else {
-				preStatus = curStatus;
-				curStatus = arr[i++];
+				prepre = pre;
+				pre = arr[i++];
 			}
 		}
-		return (preStatus != curStatus) ? Integer.MAX_VALUE : (op + (curStatus ^ 1));
+		return (prepre != pre) ? Integer.MAX_VALUE : (op + (pre ^ 1));
 	}
 
 	// 有环改灯问题的暴力版本
@@ -207,18 +219,33 @@ public class LightProblem {
 		return Math.min(Math.min(p1, p2), Math.min(p3, p4));
 	}
 
-	public static int process2(int[] arr, int nextIndex, int preStatus, int curStatus, int endStatus, int firstStatus) {
-		if (nextIndex == arr.length) {
-			return (endStatus != firstStatus || endStatus != preStatus) ? Integer.MAX_VALUE : (endStatus ^ 1);
+	// 当我调用process2，一定要保证，传入的index >= 3
+	// 当前来到index位置，不在index上做决定
+	// prepre，前前灯的状态，
+	// pre，前灯的状态，这是要做决定的灯
+	// endStatus, N-1号灯的状态
+	// firstStatus, 0号灯的状态
+	// 让所有灯都亮，最少要按几次开关
+	public static int process2(int[] arr, int index, int prepre, int pre, int endStatus, int firstStatus) {
+		if (index == arr.length) { // N-1上做决定
+			return (endStatus != firstStatus || endStatus != prepre) ? Integer.MAX_VALUE : (endStatus ^ 1);
 		}
-		int curStay = (nextIndex == arr.length - 1) ? endStatus : arr[nextIndex];
-		int curChange = (nextIndex == arr.length - 1) ? (endStatus ^ 1) : (arr[nextIndex] ^ 1);
-		int endChange = (nextIndex == arr.length - 1) ? curChange : endStatus;
-		if (preStatus == 0) {
-			int next = process2(arr, nextIndex + 1, curStatus ^ 1, curChange, endChange, firstStatus);
-			return next == Integer.MAX_VALUE ? next : (next + 1);
-		} else {
-			return process2(arr, nextIndex + 1, curStatus, curStay, endStatus, firstStatus);
+		// N-2 i
+		if (index < arr.length - 1) { // 彻底平凡的位置
+			if (prepre == 0) {
+				int next = process2(arr, index + 1, pre ^ 1, arr[index] ^ 1, endStatus, firstStatus);
+				return next == Integer.MAX_VALUE ? next : (next + 1);
+			} else {
+				return process2(arr, index + 1, pre, arr[index], endStatus, firstStatus);
+			}
+		} else { // 目前在N-2号灯上做决定
+			// N-2 (前)   arr[N-1]（来到的灯的状态）？？？endStatus
+			if (prepre == 0) {
+				int next = process2(arr, index + 1, pre ^ 1, endStatus ^ 1, endStatus ^ 1, firstStatus);
+				return next == Integer.MAX_VALUE ? next : (next + 1);
+			} else {
+				return process2(arr, index + 1, pre, endStatus, endStatus, firstStatus);
+			}
 		}
 	}
 
@@ -307,6 +334,9 @@ public class LightProblem {
 			int ans3 = loopMinStep2(arr);
 			if (ans1 != ans2 || ans1 != ans3) {
 				System.out.println("2 Oops!");
+				System.out.println(ans1);
+				System.out.println(ans2);
+				System.out.println(ans3);
 			}
 		}
 		System.out.println("test end");
