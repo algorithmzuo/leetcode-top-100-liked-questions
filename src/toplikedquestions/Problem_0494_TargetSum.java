@@ -2,6 +2,51 @@ package toplikedquestions;
 
 public class Problem_0494_TargetSum {
 
+	public static int findWays(int[] arr, int s) {
+		if (arr == null || arr.length == 0) {
+			return s == 0 ? 1 : 0;
+		}
+		return ways(arr, 0, s);
+	}
+
+	// dp[index][rest]
+	public static int ways(int[] arr, int index, int rest) {
+		if (index == arr.length) {
+			return rest == 0 ? 1 : 0;
+		}
+		int p1 = ways(arr, index + 1, rest + arr[index]);
+		int p2 = ways(arr, index + 1, rest - arr[index]);
+		return p1 + p2;
+	}
+
+	public static int dp(int[] arr, int s) {
+		if (arr == null || arr.length == 0) {
+			return s == 0 ? 1 : 0;
+		}
+		int sum = 0;
+		for (int num : arr) {
+			sum += num;
+		}
+		if (sum < s) {
+			return 0;
+		}
+		int N = arr.length;
+		int[][] dp = new int[N + 1][sum * 2 + 1];
+		dp[N][0 + sum] = 1;
+		for (int index = N - 1; index >= 0; index--) {
+			for (int rest = -sum; rest <= sum; rest++) {
+				dp[index][sum + rest] = 0;
+				if (sum + rest + arr[index] <= 2 * sum) {
+					dp[index][sum + rest] += dp[index + 1][sum + rest + arr[index]];
+				}
+				if (sum + rest - arr[index] >= 0) {
+					dp[index][sum + rest] += dp[index + 1][sum + rest - arr[index]];
+				}
+			}
+		}
+		return dp[0][sum + s];
+	}
+
 	// 题目已知arr中都是非负数
 	// arr中每个数都能在之前添加+或者-，想最后的结果是num，返回方法数
 	public static int findTargetSumWays1(int[] arr, int num) {

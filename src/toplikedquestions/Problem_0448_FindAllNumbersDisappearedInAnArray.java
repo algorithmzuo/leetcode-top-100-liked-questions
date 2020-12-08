@@ -23,7 +23,7 @@ public class Problem_0448_FindAllNumbersDisappearedInAnArray {
 	}
 
 	public static void walk(int[] nums, int i) {
-		while (nums[i] != i + 1) {
+		while (nums[i] != i + 1) { // 不断从i发货
 			int nexti = nums[i] - 1;
 			if (nums[nexti] == nexti + 1) {
 				break;
